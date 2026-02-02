@@ -1,0 +1,25 @@
+.alert-box {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    background: #3e663f;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px; /* rounded corners */
+    font-size: 15px;
+    z-index: 9999;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease;
+}
+
+.alert-box.error {
+    background: #c24f4e;
+}
+
+.hidden {
+    display: none;
+}
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
