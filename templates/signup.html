@@ -6,150 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <link rel="icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="/static/css/alert.css">
     <title>Signup Page</title>
-    <style>
-    * {
-        box-sizing: border-box;
-    }
-
-    body {
-         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; 
-        /* background: linear-gradient(135deg, #2e3553, #644781); */
-        
-        margin-right: 4%;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
     
-  background-image: url('/static/images/Gradient-Background-edit-online.webp');
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-size: 100% 100%;
-
-    }
-
-    form {
-        background-color: #ffffff;
-        padding: 30px 25px;
-        border-radius: 12px;
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
-        max-width: 420px;
-        width: 100%;
-        animation: fadeIn 0.7s ease-in-out;
-    }
-
-    h1{
-        text-align: center;
-        margin-bottom: 25px;
-        color: #333;
-        letter-spacing: 1px;
-    }
-
-    input[type="text"],
-    input[type="email"],
-    input[type="number"],
-    input[type="password"] {
-        width: 100%;
-        padding: 12px;
-        margin-bottom: 15px;
-        border: 1.5px solid #ccc;
-        border-radius: 6px;
-        font-size: 15px;
-        transition: border-color 0.3s, box-shadow 0.3s;
-    }
-
-    input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 6px rgba(102, 126, 234, 0.4);
-        outline: none;
-    }
-
-    button[type="submit"] {
-        width: 100%;
-        background-color: #667eea;
-        color: #fff;
-        padding: 12px;
-        font-size: 16px;
-        font-weight: bold;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background-color 0.3s, transform 0.2s;
-    }
-
-    button[type="submit"]:hover {
-        background-color: #5a67d8;
-        transform: translateY(-1px);
-    }
-
-    button[type="submit"]:active {
-        transform: translateY(0);
-    }
-
-    #error {
-        margin-bottom: 10px;
-        font-size: 14px;
-        text-align: center;
-    }
-
-    p {
-        text-align: center;
-        margin-top: 15px;
-        font-size: 14px;
-        color: #555;
-    }
-    .password-box {
-    position: relative;
-    width: 100%;
-}
-
-.password-box input {
-    width: 100%;
-    padding: 12px 40px 12px 12px; /* right side space for eye */
-    box-sizing: border-box;
-     border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 15px; 
-} 
-
-/* eye icon */
-.eye-icon {
-    position: absolute;
-    right: 12px;
-    top: 40%;
-    transform: translateY(-50%);
-    width: 20px;     /* 👈 perfect size */
-    height: 20px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.eye-icon:hover {
-    transform: translateY(-50%) scale(1.1);
-}
-@media (max-width: 480px) {
-    .password-box input {
-        padding: 10px 40px 10px 10px;
-        font-size: 14px;
-    }
-
-    .eye-icon {
-        width: 18px;
-        height: 18px;
-        right: 10px;
-    }
-}
-.hidden {
-    display: none;
-}
-
-
-
-
-    </style>
     <script>
 function validateform() {
 
@@ -250,18 +110,18 @@ function validateform() {
 </head>
 
 <body>
-    <form onsubmit="return validateform();">
-
+    
+<form autocomplete="off" onsubmit="return validateform();">
 
         <h1>Signup</h1>
 
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="text" id="mobile" placeholder="Number" maxlength="10" required >
+        <input type="text" id="username"  autocomplete="off" placeholder="Username" required>
+        <input type="email" id="email"  autocomplete="off" placeholder="Email" required>
+        <input type="text" id="mobile"  autocomplete="off" placeholder="Number" maxlength="10" required >
 
         
          <div class="password-box">
-        <input type="password" id="password" placeholder="Password" required>
+        <input type="password" id="password" autocomplete="new-password" placeholder="Password" required>
         <img src="/static/eye.png"
          id="eyeOpen"
          class="eye-icon "

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Bug Reports</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/viewdetails.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h2>📋 My Bug Reports</h2>
+
+    {% if reports %}
+    <table>
+        <thead>
+    <tr>
+        <th>Title</th>
+        <th>Module</th>
+        <th>Severity</th>
+        <th>Priority</th>
+        <th>Date</th>
+        <th>Actions</th>
+    </tr>
+</thead>
+        <tbody>
+{% for r in reports %}
+<tr>
+    <td>{{ r.title }}</td>
+    <td>{{ r.module }}</td>
+    <td class="severity">{{ r.severity }}</td>
+    <td class="priority">{{ r.priority }}</td>
+    <td>{{ r.created_at }}</td>
+    <td>
+        <a href="/edit-bug/{{ r.id }}" class="btn update">Update</a>
+        <a href="/delete-bug/{{ r.id }}" 
+           class="btn delete"
+           onclick="return confirm('Are you sure you want to delete this bug?');">
+           Delete
+        </a>
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+    </table>
+    {% else %}
+        <p class="empty">No bug reports found.</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

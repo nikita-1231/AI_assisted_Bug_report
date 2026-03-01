@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+
+    <!-- Custom CSS -->
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <h2 class="text-xl font-bold">Welcome, {{ username }}</h2>
+
+        <a href="/logout" class="text-xl font-bold">Logout</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+
+        <!-- Welcome -->
+        <div class="card welcome-card fade-in">
+            <h2>Welcome 👋</h2>
+            <p>You are logged in successfully. Use the options below to continue.</p>
+        </div>
+
+        <!-- Cards -->
+        <div class="card-grid">
+
+            <!-- Report Bug (LEFT) -->
+            <div class="card slide-left">
+                <h3>🐞 Report a Bug</h3>
+                <p>
+                    Submit bug details and generate structured bug reports using AI assistance.
+                </p>
+                <a href="/bug_report" class="btn btn-primary">Report Bug</a>
+            </div>
+
+            <!-- My Reports (RIGHT) -->
+            <div class="card slide-right">
+                <h3>📄 My Bug Reports</h3>
+                <p>
+                    View previously submitted bug reports and generated test cases.
+                </p>
+                <a href="/viewdetails" class="btn btn-secondary">View Reports</a>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

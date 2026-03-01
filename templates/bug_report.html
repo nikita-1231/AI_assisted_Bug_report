@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bug Report</title>
+
+    <!-- Custom CSS -->
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/bug_report.css') }}">
+    
+</head>
+<body>
+
+    <div class="form-container slide-left">
+        <h2>🐞 Bug Reporting & Test Case Generator</h2>
+
+        <form action="/generate-bug" method="post">
+
+            <div class="form-group">
+                <label>Bug Title</label>
+                <input type="text" spellcheck="true" name="title" required>
+            </div>
+
+            <div class="form-group">
+                <label>Module / Feature</label>
+                <input type="text" spellcheck="true" name="module" required>
+            </div>
+
+            <div class="form-group">
+                <label>Steps to Reproduce</label>
+                <textarea name="steps" rows="4" spellcheck="true" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Expected Result</label>
+                <textarea name="expected" rows="2" spellcheck="true" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Actual Result</label>
+                <textarea name="actual" rows="2" spellcheck="true" required></textarea>
+            </div>
+
+            <button type="submit">Generate Report</button> 
+
+        </form>
+    </div>
+
+</body>
+</html>

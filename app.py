@@ -1,260 +1,236 @@
-import pyodbc
-from flask import Flask, request, jsonify, render_template
 import re
-from werkzeug.security import generate_password_hash
+from datetime import datetime
+
+from flask import Flask, request, jsonify, render_template, redirect, session
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from pymongo import MongoClient
+from bson import ObjectId
+
+from spellchecker import SpellChecker
+import language_tool_python
+
+# ---------------- APP CONFIG ----------------
+app = Flask(__name__)
+app.secret_key = "super_secret_key_123"
 
 print("Starting app...")
-app = Flask(__name__)
 
-print("Connecting to database...")
-conn = pyodbc.connect(
-    r"DRIVER={ODBC Driver 17 for SQL Server};"
-    r"SERVER=DESKTOP-66K8B9A\SQLEXPRESS;"
-    r"DATABASE=SignupDB;"
-    r"Trusted_Connection=yes;"
-)
+# ---------------- MONGODB CONNECTION ----------------
+print("Connecting to MongoDB...")
 
-cursor = conn.cursor()
-print("Database connected successfully")
-@app.route('/')
+MONGO_URI = "mongodb+srv://admin:VDlXl8oHgIOHBEix@cluster0.h8ttfq3.mongodb.net/blogs?retryWrites=true&w=majority"
+client = MongoClient(MONGO_URI)
+
+db = client.blogs
+signup_col = db.signup
+bug_col = db.bugreport
+
+print("MongoDB connected successfully")
+
+# ---------------- SPELL & GRAMMAR ----------------
+spell = SpellChecker()
+tool = language_tool_python.LanguageTool('en-US')
+
+def clean_text(text):
+    words = text.split()
+    corrected_words = []
+
+    for word in words:
+        if word.isalpha():
+            corrected_words.append(spell.correction(word))
+        else:
+            corrected_words.append(word)
+
+    corrected_text = " ".join(corrected_words)
+    matches = tool.check(corrected_text)
+    final_text = language_tool_python.utils.correct(corrected_text, matches)
+    return final_text
+
+# ---------------- ROUTES ----------------
+
+@app.route("/")
 def home():
-    return render_template('signup.html')
+    return render_template("signup.html")
 
-@app.route('/signup', methods=['POST'])
+# ---------------- SIGNUP ----------------
+@app.route("/signup", methods=["POST"])
 def signup():
-    if not request.is_json:
-        return jsonify({"error": "Request must be JSON"}), 415
-
     data = request.get_json()
 
-    username = data.get('username')
-    email = data.get('email')
-    mobile = data.get('mobile')
-    password = data.get('password')
+    username = data.get("username", "").lower()
+    email = data.get("email", "").lower()
+    mobile = data.get("mobile")
+    password = data.get("password")
 
-    # ---- required fields ----
     if not username or not email or not mobile or not password:
         return jsonify({"error": "All fields are required"}), 400
 
-    username = username.lower()
-    email = email.lower()
-
-    # ---- mobile validation ----
     if not re.fullmatch(r"[6-9]\d{9}", mobile):
         return jsonify({"error": "Invalid mobile number"}), 400
 
-    # ---- password validation ----
-    password_pattern = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+    password_pattern = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$"
     if not re.fullmatch(password_pattern, password):
-        return jsonify({
-            "error": "Password must be 8 chars with upper, lower, number & special character"
-        }), 400
+        return jsonify({"error": "Weak password"}), 400
 
-    # ---- hash password ----
-    password_hash = generate_password_hash(password)
-
-    # ---- check username ----
-    cursor.execute("SELECT 1 FROM SignUp  WHERE LOWER(username) = ?", (username,))
-    if cursor.fetchone():
-        return jsonify({"error": "Username already exists"}), 409
-
-    # ---- check email ----
-    cursor.execute("SELECT 1 FROM SignUp WHERE LOWER(email) = ?", (email,))
-    if cursor.fetchone():
+    if signup_col.find_one({"email": email}):
         return jsonify({"error": "Email already exists"}), 409
 
-    # ---- check mobile ----
-    cursor.execute("SELECT 1 FROM SignUp WHERE mobile = ?", (mobile,))
-    if cursor.fetchone():
-        return jsonify({"error": "Mobile number already exists"}), 409
+    if signup_col.find_one({"name": username}):
+        return jsonify({"error": "Username already exists"}), 409
 
-    # ---- insert data ----
-    cursor.execute(
-        "INSERT INTO SignUp (username, email, mobile, password_hash) VALUES (?, ?, ?, ?)",
-        (username, email, mobile, password_hash)
-    )
-    conn.commit()
+    password_hash = generate_password_hash(password)
 
-    return jsonify({
-        "message": "Signup successful",
-        "username": username,
+    signup_col.insert_one({
+        "name": username,
         "email": email,
-        "mobile":mobile,
-        
-    }), 201
+        "mobile": mobile,
+        "password": password_hash,
+        "created_at": datetime.utcnow()
+    })
 
+    return jsonify({"message": "Signup successful"}), 201
 
-#  how to get data.......
-@app.route('/signup', methods=['GET'])
-def get_signup():
-    cursor.execute(
-        "SELECT id, username, email, mobile, password_hash,created_at FROM SignUp"
-    )
-    rows = cursor.fetchall()
+# ---------------- GET USERS ----------------
+@app.route("/signup", methods=["GET"])
+def get_users():
+    users = signup_col.find({}, {"password": 0})
+    return jsonify(list(users)), 200
 
-    SignUp = []
-    for row in rows:
-        SignUp.append({
-            "id": row.id,
-            "username": row.username,
-            "email": row.email,
-            # "mobile": row.mobile,
-             "password_hash": row.password_hash,
-            
-            "created_at": str(row.created_at)   
-        })
-
-    return jsonify(SignUp), 200
-   # delete the user method....
-
-@app.route("/signup/<int:_id>", methods=["DELETE"])
-def delete_user(_id):
-    try:
-        # pehle check karo user exist karta hai ya nahi
-        cursor.execute("SELECT * FROM SignUp WHERE id=?", (_id,))
-        user = cursor.fetchone()
-
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-
-        # delete query
-        cursor.execute("DELETE FROM SignUp WHERE id=?", (_id,))
-        conn.commit()
-
-        return jsonify({"message": "User deleted successfully"}), 200
-
-    except Exception as e:
-        print("DELETE ERROR:", e)   # terminal me real error dikhega
-        return jsonify({"error": "Internal server error"}), 500
-
-   # Put method .......
-@app.route("/signup/<int:_id>", methods=["PUT"])
-def update_user(_id):
- try:
+# ---------------- UPDATE USER ----------------
+@app.route("/signup/<user_id>", methods=["PUT"])
+def update_user(user_id):
     data = request.get_json()
-    username = data.get("username")
-    email = data.get("email")
-    mobile = data.get("mobile")
-    password=data.get("password")
-    
-    if not data:
-            return jsonify({"error": "No data provided"}), 400
-    
-    cursor.execute("Select * from SignUp  WHERE id=?",(_id,))
-    user = cursor.fetchone()
-    if not user:
-            return jsonify({"error": "User not found"}), 404
+    update_data = {}
 
-    fields = []
-    values = []
-# ---- username update ----
-    if username:
-            username = username.lower()
+    if "username" in data:
+        update_data["name"] = data["username"].lower()
+    if "email" in data:
+        update_data["email"] = data["email"].lower()
+    if "mobile" in data:
+        update_data["mobile"] = data["mobile"]
+    if "password" in data:
+        update_data["password"] = generate_password_hash(data["password"])
 
-            # check duplicate username
-            cursor.execute(
-                "SELECT id FROM SignUp WHERE LOWER(username)=? AND id<>?",
-                (username, _id)
-            )
-            if cursor.fetchone():
-                return jsonify({"error": "Username already exists"}), 409
+    if not update_data:
+        return jsonify({"error": "Nothing to update"}), 400
 
-            fields.append("username=?")
-            values.append(username)
+    result = signup_col.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": update_data}
+    )
 
-        # ---- email update ----
-    if email:
-            email = email.lower()
+    if result.matched_count == 0:
+        return jsonify({"error": "User not found"}), 404
 
-            cursor.execute(
-                "SELECT id FROM SignUp WHERE LOWER(email)=? AND id<>?",
-                (email, _id)
-            )
-            if cursor.fetchone():
-                return jsonify({"error": "Email already exists"}), 409
-
-            fields.append("email=?")
-            values.append(email)
-
-        # ---- mobile update ----
-    if mobile:
-            if not re.fullmatch(r"[6-9]\d{9}", mobile):
-                return jsonify({"error": "Invalid mobile number"}), 400
-
-            cursor.execute(
-                "SELECT id FROM SignUp WHERE mobile=? AND id<>?",
-                (mobile, _id)
-            )
-            if cursor.fetchone():
-                return jsonify({"error": "Mobile already exists"}), 409
-
-            fields.append("mobile=?")
-            values.append(mobile)
-
-        # ---- password update ----
-    if password:
-            if len(password) < 8:
-                return jsonify({"error": "Password too short"}), 400
-
-            password_hash = generate_password_hash(password)
-            fields.append("password_hash=?")
-            values.append(password_hash)
-
-    if not fields:
-            return jsonify({"error": "Nothing to update"}), 400
-
-    query = f"UPDATE SignUp SET {', '.join(fields)} WHERE id=?"
-    values.append(_id)
-
-    cursor.execute(query, tuple(values))
-    conn.commit()
-    
-    if cursor.rowcount == 0:
-       return jsonify({"message": "No changes made"}), 200
     return jsonify({"message": "User updated successfully"}), 200
- except Exception as e:
-    print("UPDATE ERROR:", e)
-    return jsonify({"error": "Internal server error"}), 500
-   
 
-# login module routing 
-@app.route("/login")
+# ---------------- DELETE USER ----------------
+@app.route("/signup/<user_id>", methods=["DELETE"])
+def delete_user(user_id):
+    result = signup_col.delete_one({"_id": ObjectId(user_id)})
+
+    if result.deleted_count == 0:
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify({"message": "User deleted successfully"}), 200
+
+# ---------------- LOGIN ----------------
+@app.route("/login", methods=["GET"])
 def login_page():
     return render_template("login.html")
-
-from werkzeug.security import check_password_hash
 
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
 
-    email = data.get("email")
+    email = data.get("email", "").lower()
     password = data.get("password")
 
-    if not email or not password:
-        return jsonify({"error": "Email and password required"}), 400
-
-    cursor.execute(
-        "SELECT id, username, password_hash FROM SignUp WHERE LOWER(email)=?",
-        (email.lower(),)
-    )
-    user = cursor.fetchone()
+    user = signup_col.find_one({"email": email})
 
     if not user:
         return jsonify({"error": "User not found"}), 404
 
-    if not check_password_hash(user.password_hash, password):
+    if not check_password_hash(user["password"], password):
         return jsonify({"error": "Invalid password"}), 401
 
-    return jsonify({
-        "message": "Login successful",
-        "username": user.username
-    }), 200
+    session["user_id"] = str(user["_id"])
+    session["username"] = user["name"]
 
-   
-    
+    return jsonify({"message": "Login successful", "redirect": "/dashboard"}), 200
 
+# ---------------- DASHBOARD ----------------
+@app.route("/dashboard")
+def dashboard():
+    if "user_id" not in session:
+        return redirect("/login")
 
-if __name__ == "__main__": 
-    print("Starting Flask server...") 
+    return render_template("dashboard.html", username=session["username"])
+
+# ---------------- BUG REPORT PAGE ----------------
+@app.route("/bug_report")
+def bug_page():
+    if "user_id" not in session:
+        return redirect("/login")
+    return render_template("bug_report.html")
+
+# ---------------- GENERATE BUG ----------------
+@app.route("/generate-bug", methods=["POST"])
+def generate_bug():
+    title = clean_text(request.form.get("title"))
+    module = clean_text(request.form.get("module"))
+    steps = clean_text(request.form.get("steps"))
+    expected = clean_text(request.form.get("expected"))
+    actual = clean_text(request.form.get("actual"))
+
+    severity = "Low"
+    priority = "Low"
+
+    if "crash" in actual.lower() or "error" in actual.lower():
+        severity = priority = "High"
+    elif "not working" in actual.lower():
+        severity = priority = "Medium"
+
+    bug_col.insert_one({
+        "title": title,
+        "module": module,
+        "steps": steps,
+        "expected": expected,
+        "actual": actual,
+        "severity": severity,
+        "priority": priority,
+        "reported_by": session["user_id"],
+        "created_at": datetime.utcnow()
+    })
+
+    return render_template(
+        "testcase.html",
+        title=title,
+        module=module,
+        steps=steps,
+        expected=expected,
+        actual=actual,
+        severity=severity,
+        priority=priority
+    )
+
+# ---------------- VIEW BUG REPORTS ----------------
+@app.route("/viewdetails")
+def view_reports():
+    if "user_id" not in session:
+        return redirect("/login")
+
+    reports = bug_col.find().sort("created_at", -1)
+    return render_template("viewdetails.html", reports=reports)
+
+# ---------------- LOGOUT ----------------
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/login")
+
+# ---------------- RUN ----------------
+if __name__ == "__main__":
+    print("Starting Flask server...")
     app.run(debug=True)

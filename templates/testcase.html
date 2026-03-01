@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generated Bug Report</title>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/testcase.css') }}">
+</head>
+<body>
+
+<div class="report-container slide-right">
+
+    <h2>📄 Generated Bug Report</h2>
+
+    <div class="report-section">
+        <p><span>Title:</span> {{ title }}</p>
+        <p><span>Module:</span> {{ module }}</p>
+        <p><span>Steps:</span> {{ steps }}</p>
+        <p><span>Expected:</span> {{ expected }}</p>
+        <p><span>Actual:</span> {{ actual }}</p>
+    </div>
+
+    <div class="meta-info">
+        <p><span>Severity:</span>
+            <span class="severity">{{ severity }}</span>
+        </p>
+        <p><span>Priority:</span>
+            <span class="priority">{{ priority }}</span>
+        </p>
+    </div>
+
+    <hr>
+
+    <h3>🧪 Sample Test Cases</h3>
+    <ul>
+        <li>Verify {{ module }} works with valid input</li>
+        <li>Verify error message for invalid input</li>
+        <li>Verify system does not crash</li>
+    </ul>
+
+</div>
+
+</body>
+</html>
