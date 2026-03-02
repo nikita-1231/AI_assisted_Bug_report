@@ -49,14 +49,16 @@ def home():
 # ---------------- SIGNUP ----------------
 @app.route("/signup", methods=["POST"])
 def signup():
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if data is None:
+        data = request.form 
 
     username = data.get("username", "").lower()
     email = data.get("email", "").lower()
     mobile = data.get("mobile")
     password = data.get("password")
 
-    if not all([username, email, mobile, password]):
+    if not username or not email or not mobile or not password:
         return jsonify({"error": "All fields are required"}), 400
 
     if not re.fullmatch(r"[6-9]\d{9}", mobile):
@@ -89,7 +91,9 @@ def login_page():
 
 @app.route("/login", methods=["POST"])
 def login():
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if data is None:
+        data = request.form
 
     email = data.get("email", "").lower()
     password = data.get("password")
