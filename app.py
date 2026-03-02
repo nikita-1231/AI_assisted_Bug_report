@@ -9,9 +9,9 @@ from pymongo import MongoClient
 from bson import ObjectId
 
 from spellchecker import SpellChecker
-import language_tool_python
 
-# ---------------- APP CONFIG ----------------
+
+# ---------------- APP CONFIG ----------------  
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 
@@ -47,12 +47,9 @@ def clean_text(text):
         else:
             corrected_words.append(word)
 
-    corrected_text = " ".join(corrected_words)
-    if tool:
-        matches = tool.check(corrected_text)
-        corrected_text = language_tool_python.utils.correct(corrected_text, matches)
+    
 
-    return corrected_text
+    return " ".join(corrected_words)
 
 # ---------------- ROUTES ----------------
 

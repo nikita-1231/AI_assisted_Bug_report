@@ -1,7 +1,8 @@
 Flask
+gunicorn
 pymongo
 dnspython
 werkzeug
 pyspellchecker
-gunicorn
+
 
