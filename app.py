@@ -10,19 +10,17 @@ from bson import ObjectId
 
 from spellchecker import SpellChecker
 
-
-# ---------------- APP CONFIG ----------------  
+# ---------------- APP CONFIG ----------------
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY")
+app.secret_key = os.getenv("SECRET_KEY", "fallback-secret")
 
 print("Starting app...")
 
 # ---------------- MONGODB CONNECTION ----------------
 print("Connecting to MongoDB...")
 
-MONGO_URI = os.getenv("MONGO_URI")  # 
+MONGO_URI = os.getenv("MONGO_URI")
 client = MongoClient(MONGO_URI)
-
 
 db = client.blogs
 signup_col = db.signup
@@ -30,26 +28,17 @@ bug_col = db.bugreport
 
 print("MongoDB connected successfully")
 
-# ---------------- SPELL & GRAMMAR ----------------
+# ---------------- SPELL ----------------
 spell = SpellChecker()
-tool = None
-if os.getenv("ENV") != "production":
-    import language_tool_python
-    tool = language_tool_python.LanguageTool('en-US')
 
 def clean_text(text):
+    if not text:
+        return ""
     words = text.split()
-    corrected_words = []
-
-    for word in words:
-        if word.isalpha():
-            corrected_words.append(spell.correction(word))
-        else:
-            corrected_words.append(word)
-
-    
-
-    return " ".join(corrected_words)
+    return " ".join(
+        spell.correction(word) if word.isalpha() else word
+        for word in words
+    )
 
 # ---------------- ROUTES ----------------
 
@@ -67,7 +56,7 @@ def signup():
     mobile = data.get("mobile")
     password = data.get("password")
 
-    if not username or not email or not mobile or not password:
+    if not all([username, email, mobile, password]):
         return jsonify({"error": "All fields are required"}), 400
 
     if not re.fullmatch(r"[6-9]\d{9}", mobile):
@@ -83,61 +72,15 @@ def signup():
     if signup_col.find_one({"name": username}):
         return jsonify({"error": "Username already exists"}), 409
 
-    password_hash = generate_password_hash(password)
-
     signup_col.insert_one({
         "name": username,
         "email": email,
         "mobile": mobile,
-        "password": password_hash,
+        "password": generate_password_hash(password),
         "created_at": datetime.utcnow()
     })
 
     return jsonify({"message": "Signup successful"}), 201
-
-# ---------------- GET USERS ----------------
-@app.route("/signup", methods=["GET"])
-def get_users():
-    users = signup_col.find({}, {"password": 0})
-    return jsonify(list(users)), 200
-
-# ---------------- UPDATE USER ----------------
-@app.route("/signup/<user_id>", methods=["PUT"])
-def update_user(user_id):
-    data = request.get_json()
-    update_data = {}
-
-    if "username" in data:
-        update_data["name"] = data["username"].lower()
-    if "email" in data:
-        update_data["email"] = data["email"].lower()
-    if "mobile" in data:
-        update_data["mobile"] = data["mobile"]
-    if "password" in data:
-        update_data["password"] = generate_password_hash(data["password"])
-
-    if not update_data:
-        return jsonify({"error": "Nothing to update"}), 400
-
-    result = signup_col.update_one(
-        {"_id": ObjectId(user_id)},
-        {"$set": update_data}
-    )
-
-    if result.matched_count == 0:
-        return jsonify({"error": "User not found"}), 404
-
-    return jsonify({"message": "User updated successfully"}), 200
-
-# ---------------- DELETE USER ----------------
-@app.route("/signup/<user_id>", methods=["DELETE"])
-def delete_user(user_id):
-    result = signup_col.delete_one({"_id": ObjectId(user_id)})
-
-    if result.deleted_count == 0:
-        return jsonify({"error": "User not found"}), 404
-
-    return jsonify({"message": "User deleted successfully"}), 200
 
 # ---------------- LOGIN ----------------
 @app.route("/login", methods=["GET"])
@@ -152,34 +95,28 @@ def login():
     password = data.get("password")
 
     user = signup_col.find_one({"email": email})
-
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-
-    if not check_password_hash(user["password"], password):
-        return jsonify({"error": "Invalid password"}), 401
+    if not user or not check_password_hash(user["password"], password):
+        return jsonify({"error": "Invalid credentials"}), 401
 
     session["user_id"] = str(user["_id"])
     session["username"] = user["name"]
 
-    return jsonify({"message": "Login successful", "redirect": "/dashboard"}), 200
+    return jsonify({"redirect": "/dashboard"}), 200
 
 # ---------------- DASHBOARD ----------------
 @app.route("/dashboard")
 def dashboard():
     if "user_id" not in session:
         return redirect("/login")
-
     return render_template("dashboard.html", username=session["username"])
 
-# ---------------- BUG REPORT PAGE ----------------
+# ---------------- BUG REPORT ----------------
 @app.route("/bug_report")
 def bug_page():
     if "user_id" not in session:
         return redirect("/login")
     return render_template("bug_report.html")
 
-# ---------------- GENERATE BUG ----------------
 @app.route("/generate-bug", methods=["POST"])
 def generate_bug():
     title = clean_text(request.form.get("title"))
@@ -188,9 +125,7 @@ def generate_bug():
     expected = clean_text(request.form.get("expected"))
     actual = clean_text(request.form.get("actual"))
 
-    severity = "Low"
-    priority = "Low"
-
+    severity = priority = "Low"
     if "crash" in actual.lower() or "error" in actual.lower():
         severity = priority = "High"
     elif "not working" in actual.lower():
@@ -208,33 +143,10 @@ def generate_bug():
         "created_at": datetime.utcnow()
     })
 
-    return render_template(
-        "testcase.html",
-        title=title,
-        module=module,
-        steps=steps,
-        expected=expected,
-        actual=actual,
-        severity=severity,
-        priority=priority
-    )
-
-# ---------------- VIEW BUG REPORTS ----------------
-@app.route("/viewdetails")
-def view_reports():
-    if "user_id" not in session:
-        return redirect("/login")
-
-    reports = bug_col.find().sort("created_at", -1)
-    return render_template("viewdetails.html", reports=reports)
+    return render_template("testcase.html", **locals())
 
 # ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/login")
-
-# ---------------- RUN ----------------
-
-if __name__ == "__main__":
- app.run(host="0.0.0.0", port=5000)
