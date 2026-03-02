@@ -1,4 +1,5 @@
 import re
+import os
 from datetime import datetime
 
 from flask import Flask, request, jsonify, render_template, redirect, session
@@ -12,15 +13,16 @@ import language_tool_python
 
 # ---------------- APP CONFIG ----------------
 app = Flask(__name__)
-app.secret_key = "super_secret_key_123"
+app.secret_key = os.getenv("SECRET_KEY")
 
 print("Starting app...")
 
 # ---------------- MONGODB CONNECTION ----------------
 print("Connecting to MongoDB...")
 
-MONGO_URI = "mongodb+srv://admin:VDlXl8oHgIOHBEix@cluster0.h8ttfq3.mongodb.net/blogs?retryWrites=true&w=majority"
+MONGO_URI = os.getenv("MONGO_URI")  # 
 client = MongoClient(MONGO_URI)
+
 
 db = client.blogs
 signup_col = db.signup
