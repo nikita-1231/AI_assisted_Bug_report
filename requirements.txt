@@ -3,6 +3,5 @@ pymongo
 dnspython
 werkzeug
 pyspellchecker
-language-tool-python
 gunicorn
 

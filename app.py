@@ -32,7 +32,10 @@ print("MongoDB connected successfully")
 
 # ---------------- SPELL & GRAMMAR ----------------
 spell = SpellChecker()
-tool = language_tool_python.LanguageTool('en-US')
+tool = None
+if os.getenv("ENV") != "production":
+    import language_tool_python
+    tool = language_tool_python.LanguageTool('en-US')
 
 def clean_text(text):
     words = text.split()
@@ -45,9 +48,11 @@ def clean_text(text):
             corrected_words.append(word)
 
     corrected_text = " ".join(corrected_words)
-    matches = tool.check(corrected_text)
-    final_text = language_tool_python.utils.correct(corrected_text, matches)
-    return final_text
+    if tool:
+        matches = tool.check(corrected_text)
+        corrected_text = language_tool_python.utils.correct(corrected_text, matches)
+
+    return corrected_text
 
 # ---------------- ROUTES ----------------
 
