@@ -61,16 +61,16 @@ function validateform() {
     error.innerHTML = "";
 
     /* ---------- FETCH API ---------- */
-    fetch("http://127.0.0.1:5000/signup", {
+    fetch("/signup", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            username: username,
-            email: email,
-            mobile: mobile,
-            password: password
+             username,
+             email,
+             mobile,
+             password
         })
     })
     .then(res => res.json())
@@ -148,12 +148,12 @@ function validateform() {
     const eyeOpen = document.getElementById("eyeOpen");
     const eyeClose = document.getElementById("eyeClose");
 
-    if (password.type === "password") {
-        password.type = "text";
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
         eyeOpen.classList.remove("hidden");
         eyeClose.classList.add("hidden");
     } else {
-        password.type = "password";
+        passwordInput.type = "password";
         
         eyeOpen.classList.add("hidden");
         eyeClose.classList.remove("hidden");
@@ -166,11 +166,6 @@ function validateform() {
 </div>
 
 <script src="/static/js/alert.js"></script>
-
-</body>
-
-</html>
-
 </body>
 
 </html>
