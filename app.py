@@ -116,6 +116,58 @@ def dashboard():
         return redirect("/login")
     return render_template("dashboard.html", username=session["username"])
 
+    # ---------------- BUG REPORT PAGE ----------------
+@app.route("/bug_report", methods=["GET"])
+def bug_report_page():
+    if "user_id" not in session:
+        return redirect("/login")
+    return render_template("bug_report.html")
+
+
+# ---------------- SUBMIT BUG ----------------
+@app.route("/generate-bug", methods=["POST"])
+def generate_bug():
+    if "user_id" not in session:
+        return redirect("/login")
+
+    try:
+        title = clean_text(request.form.get("title"))
+        module = clean_text(request.form.get("module"))
+        steps = clean_text(request.form.get("steps"))
+        expected = clean_text(request.form.get("expected"))
+        actual = clean_text(request.form.get("actual"))
+
+        severity = priority = "Low"
+        if actual and ("error" in actual.lower() or "crash" in actual.lower()):
+            severity = priority = "High"
+        elif actual and "not working" in actual.lower():
+            severity = priority = "Medium"
+
+        bug_col.insert_one({
+            "title": title,
+            "module": module,
+            "steps": steps,
+            "expected": expected,
+            "actual": actual,
+            "severity": severity,
+            "priority": priority,
+            "reported_by": session["user_id"],
+            "created_at": datetime.utcnow()
+        })
+
+        return render_template("testcase.html",
+                               title=title,
+                               module=module,
+                               steps=steps,
+                               expected=expected,
+                               actual=actual,
+                               severity=severity,
+                               priority=priority)
+
+    except Exception as e:
+        print("🔥 BUG ERROR:", e)
+        return jsonify({"error": "Bug submission failed"}), 500
+
 # ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():

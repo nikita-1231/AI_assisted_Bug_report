@@ -55,20 +55,18 @@
     })
     .then(res => res.json())
     .then(data => {
-        if (data.redirect) {
-    showAlert("Login successful", "success");
+        if (data.message) {
+    showAlert(data.message, "success");
     setTimeout(() => {
-        window.location.href = data.redirect;
+        window.location.href = "/dashboard";
     }, 1000);
+} else {
+    showAlert(data.error, "error");
 }
 
             
             
-         else {
-            // document.getElementById("error").innerText = data.error;
-            showAlert(data.error, "error");
-
-        }
+        
     })
     .catch(() => {
         // document.getElementById("error").innerText = "Server error";
