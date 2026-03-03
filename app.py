@@ -21,7 +21,7 @@ MONGO_URI = os.getenv("MONGO_URI")
 client = MongoClient(MONGO_URI)
 db = client.blogs
 signup_col = db.signup
-bug_col = db.bugreport
+bug_col = db.bug_report
 print("MongoDB connected successfully")
 
 # ---------------- SPELL ----------------

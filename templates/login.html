@@ -55,16 +55,16 @@
     })
     .then(res => res.json())
     .then(data => {
-        if (data.message) {
-            // alert(data.message);
-            showAlert(data.message, "success");
-         setTimeout(() => {
-                window.location.href = "/dashboard";
-            }, 1000);
+        if (data.redirect) {
+    showAlert("Login successful", "success");
+    setTimeout(() => {
+        window.location.href = data.redirect;
+    }, 1000);
+}
 
             
             
-        } else {
+         else {
             // document.getElementById("error").innerText = data.error;
             showAlert(data.error, "error");
 
