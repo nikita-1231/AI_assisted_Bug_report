@@ -116,6 +116,15 @@ def dashboard():
         return redirect("/login")
     return render_template("dashboard.html", username=session["username"])
 
+# ---------------- VIEW BUG REPORTS ----------------
+@app.route("/viewdetails")
+def viewdetails():
+    if "user_id" not in session:
+        return redirect("/login")
+
+    reports = bug_col.find().sort("created_at", -1)
+    return render_template("viewdetails.html", reports=reports)
+
     # ---------------- BUG REPORT PAGE ----------------
 @app.route("/bug_report", methods=["GET"])
 def bug_report_page():
