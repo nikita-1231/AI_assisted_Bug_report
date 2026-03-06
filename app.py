@@ -182,3 +182,53 @@ def generate_bug():
 def logout():
     session.clear()
     return redirect("/login")
+
+    # ---------------- DELETE BUG ----------------
+@app.route("/delete_bug/<bug_id>", methods=["POST"])
+def delete_bug(bug_id):
+    try:
+        if "user_id" not in session:
+            return jsonify({"error": "Unauthorized"}), 401
+
+        bug_col.delete_one({"_id": ObjectId(bug_id)})
+
+        return jsonify({"message": "Bug deleted successfully"})
+
+    except Exception as e:
+        print("DELETE BUG ERROR:", e)
+        return jsonify({"error": "Delete failed"}), 500
+    
+    # ---------------- UPDATE BUG ----------------
+@app.route("/update_bug/<bug_id>", methods=["POST"])
+def update_bug(bug_id):
+    try:
+        if "user_id" not in session:
+            return jsonify({"error": "Unauthorized"}), 401
+
+        data = request.get_json()
+
+        title = data.get("title")
+        module = data.get("module")
+        steps = data.get("steps")
+        expected = data.get("expected")
+        actual = data.get("actual")
+
+        bug_col.update_one(
+            {"_id": ObjectId(bug_id)},
+            {
+                "$set": {
+                    "title": title,
+                    "module": module,
+                    "steps": steps,
+                    "expected": expected,
+                    "actual": actual,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+
+        return jsonify({"message": "Bug updated successfully"})
+
+    except Exception as e:
+        print("UPDATE BUG ERROR:", e)
+        return jsonify({"error": "Update failed"}), 500
