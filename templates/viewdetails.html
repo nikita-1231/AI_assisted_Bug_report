@@ -15,33 +15,21 @@ method: "POST"
 .then(res => res.json())
 .then(data => {
 
-alert(data.message)
+showMessage(data.message)
+
+setTimeout(()=>{
 location.reload()
+},1000)
 
 })
 
 }
 
-function updateBug(id){
+function showMessage(msg){
 
-const title = prompt("Enter new title")
-
-fetch("/update_bug/" + id, {
-method: "POST",
-headers:{
-"Content-Type":"application/json"
-},
-body: JSON.stringify({
-title:title
-})
-})
-.then(res => res.json())
-.then(data => {
-
-alert(data.message)
-location.reload()
-
-})
+let messageBox = document.getElementById("msg")
+messageBox.innerText = msg
+messageBox.style.display = "block"
 
 }
 
@@ -54,6 +42,8 @@ location.reload()
 <div class="container">
 
 <h2>📋 My Bug Reports</h2>
+
+<p id="msg" style="display:none;color:green;font-weight:bold;"></p>
 
 {% if reports %}
 
