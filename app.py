@@ -122,7 +122,9 @@ def viewdetails():
     if "user_id" not in session:
         return redirect("/login")
 
-    reports = bug_col.find().sort("created_at", -1)
+    reports = bug_col.find({
+"reported_by":session["user_id"]
+}).sort("created_at",-1)
     return render_template("viewdetails.html", reports=reports)
 
     # ---------------- BUG REPORT PAGE ----------------
@@ -153,16 +155,17 @@ def generate_bug():
             severity = priority = "Medium"
 
         bug_col.insert_one({
-            "title": title,
-            "module": module,
-            "steps": steps,
-            "expected": expected,
-            "actual": actual,
-            "severity": severity,
-            "priority": priority,
-            "reported_by": session["user_id"],
-            "created_at": datetime.utcnow()
-        })
+    "title": title,
+    "module": module,
+    "steps": steps,
+    "expected": expected,
+    "actual": actual,
+    "severity": severity,
+    "priority": priority,
+    "status": "Open",
+    "reported_by": session["user_id"],
+    "created_at": datetime.utcnow()
+})
 
         return render_template("testcase.html",
                                title=title,
@@ -201,34 +204,51 @@ def delete_bug(bug_id):
     # ---------------- UPDATE BUG ----------------
 @app.route("/update_bug/<bug_id>", methods=["POST"])
 def update_bug(bug_id):
-    try:
-        if "user_id" not in session:
-            return jsonify({"error": "Unauthorized"}), 401
 
-        data = request.get_json()
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
 
-        title = data.get("title")
-        module = data.get("module")
-        steps = data.get("steps")
-        expected = data.get("expected")
-        actual = data.get("actual")
+    data = request.get_json()
 
-        bug_col.update_one(
-            {"_id": ObjectId(bug_id)},
-            {
-                "$set": {
-                    "title": title,
-                    "module": module,
-                    "steps": steps,
-                    "expected": expected,
-                    "actual": actual,
-                    "updated_at": datetime.utcnow()
-                }
-            }
-        )
+    update_data = {}
 
-        return jsonify({"message": "Bug updated successfully"})
+    if data.get("title"):
+        update_data["title"] = data["title"]
 
-    except Exception as e:
-        print("UPDATE BUG ERROR:", e)
-        return jsonify({"error": "Update failed"}), 500
+    if data.get("module"):
+        update_data["module"] = data["module"]
+
+    if data.get("steps"):
+        update_data["steps"] = data["steps"]
+
+    if data.get("expected"):
+        update_data["expected"] = data["expected"]
+
+    if data.get("actual"):
+        update_data["actual"] = data["actual"]
+
+    update_data["updated_at"] = datetime.utcnow()
+
+    bug_col.update_one(
+        {"_id": ObjectId(bug_id)},
+        {"$set": update_data}
+    )
+
+    return jsonify({"message": "Bug updated successfully"})
+
+# Status Updation..........
+@app.route("/update_status/<bug_id>", methods=["POST"])
+def update_status(bug_id):
+
+    if "user_id" not in session:
+        return jsonify({"error":"Unauthorized"}),401
+
+    data = request.get_json()
+    status = data.get("status")
+
+    bug_col.update_one(
+        {"_id": ObjectId(bug_id)},
+        {"$set":{"status":status}}
+    )
+
+    return jsonify({"message":"Status updated successfully"})
