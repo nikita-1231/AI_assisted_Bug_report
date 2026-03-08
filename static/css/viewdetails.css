@@ -218,7 +218,7 @@ margin-right:6px;
 
 #updateModal button:first-child{
 background:#16a34a;
-color:white;
+color:blue;
 }
 
 #updateModal button:first-child:hover{
@@ -227,7 +227,7 @@ background:#15803d;
 
 #updateModal button:last-child{
 background:#dc2626;
-color:#1d4ed8
+color:white
 }
 
 #updateModal button:last-child:hover{
