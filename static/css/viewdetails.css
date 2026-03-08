@@ -1,101 +1,235 @@
+/* ---------------- PAGE ---------------- */
+
 body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: #0f172a;   /* dark background */
-    color: #e5e7eb;
+margin:0;
+padding:0;
+font-family:Arial, sans-serif;
+background-color:#0f172a;
+color:#e5e7eb;
 }
 
+/* ---------------- CONTAINER ---------------- */
+
 .container {
-    max-width: 1000px;
-    margin: 60px auto;
-    background: #020617;         /* deep black card */
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.8);
+max-width:1000px;
+margin:60px auto;
+background:#020617;
+padding:25px;
+border-radius:10px;
+box-shadow:0 8px 25px rgba(0,0,0,0.8);
 }
 
 h2 {
-    margin-bottom: 20px;
-    color: #f9fafb;
-    border-bottom: 1px solid #1e293b;
-    padding-bottom: 10px;
+margin-bottom:20px;
+color:#f9fafb;
+border-bottom:1px solid #1e293b;
+padding-bottom:10px;
 }
 
+/* ---------------- TABLE ---------------- */
+
 table {
-    width: 100%;
-    border-collapse: collapse;
+width:100%;
+border-collapse:collapse;
 }
 
 th {
-    background-color: #020617;
-    color: #cbd5f5;
-    padding: 12px;
-    border: 1px solid #1e293b;
+background-color:#020617;
+color:#cbd5f5;
+padding:12px;
+border:1px solid #1e293b;
 }
 
 td {
-    padding: 12px;
-    border: 1px solid #1e293b;
-    text-align: center;
-    color: #e5e7eb;
+padding:12px;
+border:1px solid #1e293b;
+text-align:center;
+color:#e5e7eb;
 }
 
-tr:nth-child(even) {
-    background-color: #020617;
+tr:nth-child(even){
+background-color:#020617;
 }
 
-tr:nth-child(odd) {
-    background-color: #020617;
+tr:nth-child(odd){
+background-color:#020617;
 }
 
-tr:hover {
-    background-color: #1e293b;
-    transition: 0.2s ease-in-out;
+tr:hover{
+background-color:#1e293b;
+transition:0.2s ease-in-out;
 }
 
-/* Severity colors */
-.severity {
-    color: #ef4444;   /* red */
-    font-weight: bold;
+/* ---------------- SEVERITY ---------------- */
+
+.severity{
+color:#ef4444;
+font-weight:bold;
 }
 
-/* Priority colors */
-.priority {
-    color: #f59e0b;   /* amber */
-    font-weight: bold;
+/* ---------------- PRIORITY ---------------- */
+
+.priority{
+color:#f59e0b;
+font-weight:bold;
 }
 
-.empty {
-    text-align: center;
-    color: #94a3b8;
-    font-size: 16px;
-    padding: 20px;
-}
-.btn {
-    padding: 6px 12px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: bold;
-    margin: 0 4px;
-    display: inline-block;
+/* ---------------- EMPTY ---------------- */
+
+.empty{
+text-align:center;
+color:#94a3b8;
+font-size:16px;
+padding:20px;
 }
 
-.btn.update {
-    background-color: #2563eb;   /* blue */
-    color: #ffffff;
+/* ---------------- BUTTONS ---------------- */
+
+.btn{
+padding:6px 12px;
+border-radius:6px;
+text-decoration:none;
+font-size:14px;
+font-weight:bold;
+margin:0 4px;
+display:inline-block;
+border:none;
+cursor:pointer;
 }
 
-.btn.update:hover {
-    background-color: #1d4ed8;
+.btn.update{
+background-color:#2563eb;
+color:#ffffff;
 }
 
-.btn.delete {
-    background-color: #dc2626;   /* red */
-    color: #ffffff;
+.btn.update:hover{
+background-color:#1d4ed8;
 }
 
-.btn.delete:hover {
-    background-color: #b91c1c;
+.btn.delete{
+background-color:#dc2626;
+color:#ffffff;
+}
+
+.btn.delete:hover{
+background-color:#b91c1c;
+}
+
+/* ---------------- STATUS DROPDOWN ---------------- */
+
+select{
+background:#020617;
+color:#e5e7eb;
+border:1px solid #1e293b;
+padding:6px 10px;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+}
+
+select:hover{
+border-color:#2563eb;
+}
+
+/* ---------------- SUCCESS MESSAGE ---------------- */
+
+#msg{
+background:#16a34a;
+padding:10px;
+border-radius:6px;
+margin-bottom:15px;
+text-align:center;
+font-weight:bold;
+}
+
+/* ---------------- MODAL BACKGROUND ---------------- */
+
+#updateModal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.8);
+z-index:1000;
+}
+
+/* ---------------- MODAL BOX ---------------- */
+
+#updateModal div{
+background:#020617;
+padding:25px;
+width:420px;
+margin:100px auto;
+border-radius:10px;
+box-shadow:0 8px 30px rgba(0,0,0,0.9);
+border:1px solid #1e293b;
+}
+
+/* ---------------- MODAL TITLE ---------------- */
+
+#updateModal h3{
+margin-top:0;
+color:#f9fafb;
+margin-bottom:15px;
+text-align:center;
+}
+
+/* ---------------- INPUTS ---------------- */
+
+#updateModal input,
+#updateModal textarea{
+
+width:100%;
+padding:10px;
+margin-bottom:12px;
+
+background:#020617;
+color:#e5e7eb;
+
+border:1px solid #1e293b;
+border-radius:6px;
+
+outline:none;
+
+}
+
+/* ---------------- INPUT FOCUS ---------------- */
+
+#updateModal input:focus,
+#updateModal textarea:focus{
+border-color:#2563eb;
+box-shadow:0 0 5px #2563eb50;
+}
+
+/* ---------------- MODAL BUTTONS ---------------- */
+
+#updateModal button{
+
+padding:8px 14px;
+border-radius:6px;
+border:none;
+cursor:pointer;
+font-weight:bold;
+margin-right:6px;
+
+}
+
+#updateModal button:first-child{
+background:#16a34a;
+color:white;
+}
+
+#updateModal button:first-child:hover{
+background:#15803d;
+}
+
+#updateModal button:last-child{
+background:#dc2626;
+color:white;
+}
+
+#updateModal button:last-child:hover{
+background:#b91c1c;
 }

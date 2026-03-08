@@ -30,7 +30,15 @@ function showMessage(msg){
 let messageBox = document.getElementById("msg")
 messageBox.innerText = msg
 messageBox.style.display = "block"
+messageBox.style.opacity = "1"
 
+setTimeout(()=>{
+messageBox.style.transition = "opacity 1s"
+messageBox.style.opacity = "0"
+},2000)
+setTimeout(function(){
+messageBox.style.display = "none"
+},3000)
 }
 
 
