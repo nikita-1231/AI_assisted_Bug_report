@@ -19,7 +19,7 @@ border-radius:10px;
 box-shadow:0 8px 25px rgba(0,0,0,0.8);
 }
 
-h2 {
+h3 {
 margin-bottom:20px;
 color:#f9fafb;
 border-bottom:1px solid #1e293b;
@@ -181,7 +181,7 @@ text-align:center;
 #updateModal input,
 #updateModal textarea{
 
-width:100%;
+width:90%;
 padding:10px;
 margin-bottom:12px;
 
@@ -227,7 +227,7 @@ background:#15803d;
 
 #updateModal button:last-child{
 background:#dc2626;
-color:white;
+color:#1d4ed8
 }
 
 #updateModal button:last-child:hover{
