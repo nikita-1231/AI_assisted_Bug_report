@@ -160,13 +160,17 @@ showMessage(data.message)
 <td>{{ r.created_at }}</td>
 
 <td>
+<div class="action-buttons">
 
 <button onclick="openUpdate('{{r._id}}','{{r.title}}','{{r.module}}','{{r.steps}}','{{r.expected}}','{{r.actual}}')" class="btn update">
 Update
 </button>
 
-<button onclick="deleteBug('{{ r._id }}')" class="btn delete">Delete</button>
+<button onclick="deleteBug('{{ r._id }}')" class="btn delete">
+Delete
+</button>
 
+</div>
 </td>
 
 

@@ -233,4 +233,54 @@ color:white
 #updateModal button:last-child:hover{
 background:#b91c1c;
 }
+/* ---------------- ACTION BUTTON LAYOUT ---------------- */
+
+/* Wrapper for action buttons */
+.action-buttons{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:12px;          /* space between Update & Delete */
+flex-wrap:wrap;    /* prevents overlap on small screens */
+}
+
+/* Button base style (keeps same size for both) */
+.btn{
+padding:6px 14px;
+border-radius:6px;
+text-decoration:none;
+font-size:14px;
+font-weight:bold;
+margin:0;
+border:none;
+cursor:pointer;
+min-width:80px;     /* keeps equal button width */
+text-align:center;
+transition:0.2s ease;
+}
+
+/* Hover animation */
+.btn:hover{
+transform:scale(1.05);
+}
+
+/* Update button */
+.btn.update{
+background-color:#2563eb;
+color:#ffffff;
+}
+
+.btn.update:hover{
+background-color:#1d4ed8;
+}
+
+/* Delete button */
+.btn.delete{
+background-color:#dc2626;
+color:#ffffff;
+}
+
+.btn.delete:hover{
+background-color:#b91c1c;
+}
 
