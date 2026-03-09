@@ -1,42 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Generated Bug Report</title>
 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/testcase.css') }}">
+<title>Generated Bug Report</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/testcase.css') }}">
+
 </head>
+
 <body>
 
-<div class="report-container slide-right">
-     <!-- showing the content of the bug report -->
-    <h2>📄 Generated Bug Report</h2>
+<div class="report-container">
 
-    <div class="report-section">
-        <p><span>Title:</span> {{ title }}</p>
-        <p><span>Module:</span> {{ module }}</p>
-        <p><span>Steps:</span> {{ steps }}</p>
-        <p><span>Expected:</span> {{ expected }}</p>
-        <p><span>Actual:</span> {{ actual }}</p>
-    </div>
+<h2>Generated Bug Report</h2>
 
-    <div class="meta-info">
-        <p><span>Severity:</span>
-            <span class="severity">{{ severity }}</span>
-        </p>
-        <p><span>Priority:</span>
-            <span class="priority">{{ priority }}</span>
-        </p>
-    </div>
+<p><b>Bug ID:</b> {{ bug_id }}</p>
+<p><b>Title:</b> {{ title }}</p>
+<p><b>Module:</b> {{ module }}</p>
+<p><b>Steps:</b> {{ steps }}</p>
+<p><b>Expected:</b> {{ expected }}</p>
+<p><b>Actual:</b> {{ actual }}</p>
 
-    <hr>
+<p><b>Severity:</b> {{ severity }}</p>
+<p><b>Priority:</b> {{ priority }}</p>
 
-    <h3>🧪 Sample Test Cases</h3>
-    <ul>
-        <li>Verify {{ module }} works with valid input</li>
-        <li>Verify error message for invalid input</li>
-        <li>Verify system does not crash</li>
-    </ul>
+<hr>
+
+<h3>Generated Test Cases</h3>
+
+<table border="1" cellpadding="8">
+
+<tr>
+<th>ID</th>
+<th>Description</th>
+<th>Steps</th>
+<th>Expected</th>
+</tr>
+
+{% for tc in test_cases %}
+
+<tr>
+
+<td>{{ tc.id }}</td>
+
+<td>{{ tc.desc }}</td>
+
+<td>{{ tc.steps }}</td>
+
+<td>{{ tc.expected }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<br>
+
+<a href="/export_pdf?title={{title}}&module={{module}}">
+<button>Export Test Cases PDF</button>
+</a>
+
+<br><br>
+
+<a href="/bug_report">
+<button>Report Another Bug</button>
+</a>
 
 </div>
 
