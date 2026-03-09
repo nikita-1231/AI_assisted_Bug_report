@@ -149,3 +149,6 @@ def delete_bug(bug_id):
     bug_col.delete_one({"_id":ObjectId(bug_id)})
 
     return jsonify({"message":"Bug deleted"})
+
+if __name__ == "__main__":
+     app.run(debug=True)
