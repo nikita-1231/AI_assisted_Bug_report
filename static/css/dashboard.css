@@ -30,7 +30,7 @@ body {
 
 .logout-btn {
     background-color: rgba(238, 230, 230, 0.925);
-    color: #e5e7eb;
+    color: whitesmoke;
     padding: 8px 16px;
     border-radius: 6px;
     text-decoration: none;
@@ -38,7 +38,7 @@ body {
 }
 
 .logout-btn:hover {
-    background-color: #98baeb;
+    background-color: #9ab7df;
 }
 
 /* Layout */
