@@ -17,6 +17,7 @@ app.secret_key = os.getenv("SECRET_KEY", "fallback-secret")
 # ---------------- MONGODB ----------------
 MONGO_URI = os.getenv("MONGO_URI")
 client = MongoClient(MONGO_URI)
+
 db = client.blogs
 signup_col = db.signup
 bug_col = db.bug_report
@@ -34,7 +35,8 @@ def clean_text(text):
 
 # ---------------- BUG ID GENERATOR ----------------
 def generate_bug_id():
-    last_bug = bug_col.find_one(sort=[("created_at", -1)])
+
+    last_bug = bug_col.find_one(sort=[("created_at",-1)])
 
     if not last_bug or "bug_id" not in last_bug:
         return "BUG-001"
@@ -45,19 +47,19 @@ def generate_bug_id():
     return f"BUG-{new_id:03d}"
 
 # ---------------- SMART TEST CASE GENERATOR ----------------
-def generate_test_cases(title, module, steps, expected, actual):
+def generate_test_cases(title,module,steps,expected,actual):
 
     return [
         {"id":"TC-01","desc":f"Verify {module} functionality","steps":steps,"expected":expected},
         {"id":"TC-02","desc":"Verify valid input handling","steps":steps,"expected":expected},
         {"id":"TC-03","desc":"Verify invalid input handling","steps":steps,"expected":"Error message should appear"},
-        {"id":"TC-04","desc":"Verify system does not crash","steps":steps,"expected":"System should remain stable"},
-        {"id":"TC-05","desc":"Verify error logging","steps":steps,"expected":"Error should be logged"},
+        {"id":"TC-04","desc":"Verify system stability","steps":steps,"expected":"System should not crash"},
+        {"id":"TC-05","desc":"Verify error logging","steps":steps,"expected":"Error must be logged"},
         {"id":"TC-06","desc":"Verify UI response","steps":steps,"expected":"Proper UI feedback"},
         {"id":"TC-07","desc":"Verify backend validation","steps":steps,"expected":"Validation should trigger"},
-        {"id":"TC-08","desc":"Verify database response","steps":steps,"expected":"Correct DB operation"},
-        {"id":"TC-09","desc":"Verify after bug fix","steps":steps,"expected":expected},
-        {"id":"TC-10","desc":"Regression test for module","steps":steps,"expected":expected}
+        {"id":"TC-08","desc":"Verify database operation","steps":steps,"expected":"Data should be saved correctly"},
+        {"id":"TC-09","desc":"Verify bug after fix","steps":steps,"expected":expected},
+        {"id":"TC-10","desc":"Regression test","steps":steps,"expected":expected}
     ]
 
 # ---------------- HOME ----------------
@@ -65,12 +67,84 @@ def generate_test_cases(title, module, steps, expected, actual):
 def home():
     return render_template("signup.html")
 
+# ---------------- SIGNUP ----------------
+@app.route("/signup", methods=["POST"])
+def signup():
+
+    name = request.form.get("name")
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    existing_user = signup_col.find_one({"email":email})
+
+    if existing_user:
+        return "User already exists"
+
+    hashed_password = generate_password_hash(password)
+
+    signup_col.insert_one({
+        "name":name,
+        "email":email,
+        "password":hashed_password
+    })
+
+    return redirect("/login")
+
+# ---------------- LOGIN PAGE ----------------
+@app.route("/login")
+def login_page():
+    return render_template("login.html")
+
+# ---------------- LOGIN ----------------
+@app.route("/login", methods=["POST"])
+def login():
+
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    user = signup_col.find_one({"email":email})
+
+    if user and check_password_hash(user["password"], password):
+
+        session["user_id"] = str(user["_id"])
+        session["user_name"] = user["name"]
+
+        return redirect("/bug_report")
+
+    return "Invalid credentials"
+
+# ---------------- DASHBOARD ----------------
+@app.route("/dashboard") 
+def dashboard(): 
+    if "user_id" not in session: 
+        return redirect("/login")
+    return render_template("dashboard.html", username=session["username"])
+
+    # ---------------- VIEW BUG REPORTS ----------------
+@app.route("/viewdetails") 
+def viewdetails(): 
+        if "user_id" not in session: 
+            return redirect("/login") 
+        reports = bug_col.find({ "reported_by":session["user_id"] }).sort("created_at",-1) 
+        return render_template("viewdetails.html", reports=reports)
+
+# ---------------- LOGOUT ----------------
+@app.route("/logout")
+def logout():
+
+    session.clear()
+    return redirect("/login")
+
 # ---------------- BUG REPORT PAGE ----------------
 @app.route("/bug_report")
 def bug_report_page():
+
     if "user_id" not in session:
         return redirect("/login")
-    return render_template("bug_report.html")
+
+    bugs = list(bug_col.find({"reported_by":session["user_id"]}))
+
+    return render_template("bug_report.html",bugs=bugs)
 
 # ---------------- GENERATE BUG ----------------
 @app.route("/generate-bug", methods=["POST"])
@@ -89,12 +163,14 @@ def generate_bug():
 
     if "error" in actual.lower() or "crash" in actual.lower():
         severity = priority = "High"
+
     elif "not working" in actual.lower():
         severity = priority = "Medium"
 
     bug_id = generate_bug_id()
 
     bug_col.insert_one({
+
         "bug_id":bug_id,
         "title":title,
         "module":module,
@@ -106,6 +182,7 @@ def generate_bug():
         "status":"Open",
         "reported_by":session["user_id"],
         "created_at":datetime.utcnow()
+
     })
 
     test_cases = generate_test_cases(title,module,steps,expected,actual)
@@ -122,6 +199,8 @@ def generate_bug():
         priority=priority,
         test_cases=test_cases
     )
+
+
 
 # ---------------- EXPORT PDF ----------------
 @app.route("/export_pdf")
@@ -150,5 +229,33 @@ def delete_bug(bug_id):
 
     return jsonify({"message":"Bug deleted"})
 
+
+# ---------------- UPDATE BUG ---------------- 
+@app.route("/update_bug/<bug_id>", methods=["POST"])
+def update_bug(bug_id):
+     if "user_id" not in session: 
+        return jsonify({"error": "Unauthorized"}), 401 
+     data = request.get_json()
+     update_data = {} 
+     if data.get("title"): 
+      update_data["title"] = data["title"] 
+      if data.get("module"):
+          update_data["module"] = data["module"]
+          if data.get("steps"):
+              update_data["steps"] = data["steps"] 
+              if data.get("expected"): 
+                  update_data["expected"] = data["expected"] 
+                  if data.get("actual"): update_data["actual"] = data["actual"] 
+                  update_data["updated_at"] = datetime.utcnow() 
+                  bug_col.update_one( {"_id": ObjectId(bug_id)}, 
+                                     {"$set": update_data} )
+              return jsonify({"message": "Bug updated successfully"})
+          
+
+
+          
+# ---------------- UPDATE STATUS---------------- 
+
+# ---------------- RUN ----------------
 if __name__ == "__main__":
-     app.run(debug=True)
+    app.run(debug=True)
