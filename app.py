@@ -266,3 +266,4 @@ def update_status(bug_id):
 # ---------------- RUN ----------------
 if __name__ == "__main__":
     app.run(debug=True)
+    
