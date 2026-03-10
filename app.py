@@ -255,6 +255,13 @@ def update_bug(bug_id):
 
           
 # ---------------- UPDATE STATUS---------------- 
+@app.route("/update_status/<bug_id>", methods=["POST"]) 
+def update_status(bug_id): 
+    if "user_id" not in session: return jsonify({"error":"Unauthorized"}),401 
+    data = request.get_json() 
+    status = data.get("status") 
+    bug_col.update_one( {"_id": ObjectId(bug_id)}, {"$set":{"status":status}} )
+    return jsonify({"message":"Status updated successfully"})
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
