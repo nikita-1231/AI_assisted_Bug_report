@@ -13,11 +13,15 @@ from reportlab.pdfgen import canvas
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fallback-secret")
-
+print("App is starting...")
 # ---------------- MONGODB ----------------
 MONGO_URI = os.getenv("MONGO_URI")
-client = MongoClient(MONGO_URI)
 
+if not MONGO_URI:
+    print("MongoDB URI not found")
+else:
+    client = MongoClient(MONGO_URI)
+print("Mongo connected")   
 db = client.blogs
 signup_col = db.signup
 bug_col = db.bug_report
