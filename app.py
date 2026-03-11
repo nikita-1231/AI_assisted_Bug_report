@@ -15,14 +15,22 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fallback-secret")
 print("App is starting...")
 # ---------------- MONGODB ----------------
+# ---------------- MONGODB ----------------
+
 MONGO_URI = os.getenv("MONGO_URI")
 
-if not MONGO_URI:
-    print("MongoDB URI not found")
-else:
-    client = MongoClient(MONGO_URI)
-print("Mongo connected")   
+client = MongoClient(MONGO_URI)
+
+try:
+    client.admin.command("ping")
+    print("Mongo connected")
+except Exception as e:
+    print("Mongo connection error:", e)
+
+# database
 db = client.blogs
+
+# collections
 signup_col = db.signup
 bug_col = db.bug_report
 
@@ -266,6 +274,12 @@ def update_status(bug_id):
     status = data.get("status") 
     bug_col.update_one( {"_id": ObjectId(bug_id)}, {"$set":{"status":status}} )
     return jsonify({"message":"Status updated successfully"})
+
+
+#--------test----------
+@app.route("/test")
+def test():
+    return "Server is running"
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
