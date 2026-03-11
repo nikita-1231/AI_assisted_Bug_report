@@ -1,4 +1,3 @@
-import re
 import os
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template, redirect, session, send_file
@@ -13,11 +12,15 @@ from reportlab.pdfgen import canvas
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fallback-secret")
+
 print("App is starting...")
-# ---------------- MONGODB ----------------
+
 # ---------------- MONGODB ----------------
 
 MONGO_URI = os.getenv("MONGO_URI")
+
+if not MONGO_URI:
+    raise Exception("MONGO_URI not set")
 
 client = MongoClient(MONGO_URI)
 
@@ -27,16 +30,15 @@ try:
 except Exception as e:
     print("Mongo connection error:", e)
 
-# database
 db = client.blogs
 
-# collections
 signup_col = db.signup
 bug_col = db.bug_report
 
 spell = SpellChecker()
 
 # ---------------- TEXT CLEAN ----------------
+
 def clean_text(text):
     if not text:
         return ""
@@ -46,9 +48,10 @@ def clean_text(text):
     )
 
 # ---------------- BUG ID GENERATOR ----------------
+
 def generate_bug_id():
 
-    last_bug = bug_col.find_one(sort=[("created_at",-1)])
+    last_bug = bug_col.find_one(sort=[("created_at", -1)])
 
     if not last_bug or "bug_id" not in last_bug:
         return "BUG-001"
@@ -58,8 +61,9 @@ def generate_bug_id():
 
     return f"BUG-{new_id:03d}"
 
-# ---------------- SMART TEST CASE GENERATOR ----------------
-def generate_test_cases(title,module,steps,expected,actual):
+# ---------------- TEST CASE GENERATOR ----------------
+
+def generate_test_cases(title, module, steps, expected, actual):
 
     return [
         {"id":"TC-01","desc":f"Verify {module} functionality","steps":steps,"expected":expected},
@@ -75,11 +79,13 @@ def generate_test_cases(title,module,steps,expected,actual):
     ]
 
 # ---------------- HOME ----------------
+
 @app.route("/")
 def home():
     return render_template("signup.html")
 
 # ---------------- SIGNUP ----------------
+
 @app.route("/signup", methods=["POST"])
 def signup():
 
@@ -87,60 +93,68 @@ def signup():
     email = request.form.get("email")
     password = request.form.get("password")
 
-    existing_user = signup_col.find_one({"email":email})
-
-    if existing_user:
+    if signup_col.find_one({"email": email}):
         return "User already exists"
 
     hashed_password = generate_password_hash(password)
 
     signup_col.insert_one({
-        "name":name,
-        "email":email,
-        "password":hashed_password
+        "name": name,
+        "email": email,
+        "password": hashed_password
     })
 
     return redirect("/login")
 
 # ---------------- LOGIN PAGE ----------------
+
 @app.route("/login")
 def login_page():
     return render_template("login.html")
 
 # ---------------- LOGIN ----------------
+
 @app.route("/login", methods=["POST"])
 def login():
 
     email = request.form.get("email")
     password = request.form.get("password")
 
-    user = signup_col.find_one({"email":email})
+    user = signup_col.find_one({"email": email})
 
     if user and check_password_hash(user["password"], password):
 
         session["user_id"] = str(user["_id"])
         session["user_name"] = user["name"]
 
-        return redirect("/bug_report")
+        return redirect("/dashboard")
 
     return "Invalid credentials"
 
 # ---------------- DASHBOARD ----------------
-@app.route("/dashboard") 
-def dashboard(): 
-    if "user_id" not in session: 
-        return redirect("/login")
-    return render_template("dashboard.html", username=session["username"])
 
-    # ---------------- VIEW BUG REPORTS ----------------
-@app.route("/viewdetails") 
-def viewdetails(): 
-        if "user_id" not in session: 
-            return redirect("/login") 
-        reports = bug_col.find({ "reported_by":session["user_id"] }).sort("created_at",-1) 
-        return render_template("viewdetails.html", reports=reports)
+@app.route("/dashboard")
+def dashboard():
+
+    if "user_id" not in session:
+        return redirect("/login")
+
+    return render_template("dashboard.html", username=session["user_name"])
+
+# ---------------- VIEW BUG REPORTS ----------------
+
+@app.route("/viewdetails")
+def viewdetails():
+
+    if "user_id" not in session:
+        return redirect("/login")
+
+    reports = bug_col.find({"reported_by": session["user_id"]}).sort("created_at", -1)
+
+    return render_template("viewdetails.html", reports=reports)
 
 # ---------------- LOGOUT ----------------
+
 @app.route("/logout")
 def logout():
 
@@ -148,17 +162,19 @@ def logout():
     return redirect("/login")
 
 # ---------------- BUG REPORT PAGE ----------------
+
 @app.route("/bug_report")
 def bug_report_page():
 
     if "user_id" not in session:
         return redirect("/login")
 
-    bugs = list(bug_col.find({"reported_by":session["user_id"]}))
+    bugs = list(bug_col.find({"reported_by": session["user_id"]}))
 
-    return render_template("bug_report.html",bugs=bugs)
+    return render_template("bug_report.html", bugs=bugs)
 
 # ---------------- GENERATE BUG ----------------
+
 @app.route("/generate-bug", methods=["POST"])
 def generate_bug():
 
@@ -175,29 +191,26 @@ def generate_bug():
 
     if "error" in actual.lower() or "crash" in actual.lower():
         severity = priority = "High"
-
     elif "not working" in actual.lower():
         severity = priority = "Medium"
 
     bug_id = generate_bug_id()
 
     bug_col.insert_one({
-
-        "bug_id":bug_id,
-        "title":title,
-        "module":module,
-        "steps":steps,
-        "expected":expected,
-        "actual":actual,
-        "severity":severity,
-        "priority":priority,
-        "status":"Open",
-        "reported_by":session["user_id"],
-        "created_at":datetime.utcnow()
-
+        "bug_id": bug_id,
+        "title": title,
+        "module": module,
+        "steps": steps,
+        "expected": expected,
+        "actual": actual,
+        "severity": severity,
+        "priority": priority,
+        "status": "Open",
+        "reported_by": session["user_id"],
+        "created_at": datetime.utcnow()
     })
 
-    test_cases = generate_test_cases(title,module,steps,expected,actual)
+    test_cases = generate_test_cases(title, module, steps, expected, actual)
 
     return render_template(
         "testcase.html",
@@ -212,9 +225,8 @@ def generate_bug():
         test_cases=test_cases
     )
 
-
-
 # ---------------- EXPORT PDF ----------------
+
 @app.route("/export_pdf")
 def export_pdf():
 
@@ -223,7 +235,7 @@ def export_pdf():
 
     file_path = "testcases.pdf"
 
-    c = canvas.Canvas(file_path,pagesize=letter)
+    c = canvas.Canvas(file_path, pagesize=letter)
 
     c.drawString(100,750,"Bug Test Case Report")
     c.drawString(100,720,f"Title: {title}")
@@ -231,57 +243,70 @@ def export_pdf():
 
     c.save()
 
-    return send_file(file_path,as_attachment=True)
+    return send_file(file_path, as_attachment=True)
 
 # ---------------- DELETE BUG ----------------
+
 @app.route("/delete_bug/<bug_id>", methods=["POST"])
 def delete_bug(bug_id):
 
-    bug_col.delete_one({"_id":ObjectId(bug_id)})
+    bug_col.delete_one({"_id": ObjectId(bug_id)})
 
-    return jsonify({"message":"Bug deleted"})
+    return jsonify({"message": "Bug deleted"})
 
+# ---------------- UPDATE BUG ----------------
 
-# ---------------- UPDATE BUG ---------------- 
 @app.route("/update_bug/<bug_id>", methods=["POST"])
 def update_bug(bug_id):
-     if "user_id" not in session: 
-        return jsonify({"error": "Unauthorized"}), 401 
-     data = request.get_json()
-     update_data = {} 
-     if data.get("title"): 
-      update_data["title"] = data["title"] 
-      if data.get("module"):
-          update_data["module"] = data["module"]
-          if data.get("steps"):
-              update_data["steps"] = data["steps"] 
-              if data.get("expected"): 
-                  update_data["expected"] = data["expected"] 
-                  if data.get("actual"): update_data["actual"] = data["actual"] 
-                  update_data["updated_at"] = datetime.utcnow() 
-                  bug_col.update_one( {"_id": ObjectId(bug_id)}, 
-                                     {"$set": update_data} )
-              return jsonify({"message": "Bug updated successfully"})
-          
 
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
 
-          
-# ---------------- UPDATE STATUS---------------- 
-@app.route("/update_status/<bug_id>", methods=["POST"]) 
-def update_status(bug_id): 
-    if "user_id" not in session: return jsonify({"error":"Unauthorized"}),401 
-    data = request.get_json() 
-    status = data.get("status") 
-    bug_col.update_one( {"_id": ObjectId(bug_id)}, {"$set":{"status":status}} )
+    data = request.get_json()
+
+    update_data = {}
+
+    fields = ["title","module","steps","expected","actual"]
+
+    for field in fields:
+        if data.get(field):
+            update_data[field] = data[field]
+
+    update_data["updated_at"] = datetime.utcnow()
+
+    bug_col.update_one(
+        {"_id": ObjectId(bug_id)},
+        {"$set": update_data}
+    )
+
+    return jsonify({"message":"Bug updated successfully"})
+
+# ---------------- UPDATE STATUS ----------------
+
+@app.route("/update_status/<bug_id>", methods=["POST"])
+def update_status(bug_id):
+
+    if "user_id" not in session:
+        return jsonify({"error":"Unauthorized"}),401
+
+    data = request.get_json()
+
+    status = data.get("status")
+
+    bug_col.update_one(
+        {"_id": ObjectId(bug_id)},
+        {"$set":{"status":status}}
+    )
+
     return jsonify({"message":"Status updated successfully"})
 
+# ---------------- TEST ROUTE ----------------
 
-#--------test----------
 @app.route("/test")
 def test():
     return "Server is running"
 
 # ---------------- RUN ----------------
+
 if __name__ == "__main__":
     app.run(debug=True)
-    
