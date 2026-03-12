@@ -149,7 +149,10 @@ def viewdetails():
     if "user_id" not in session:
         return redirect("/login")
 
-    reports = bug_col.find({"reported_by": session["user_id"]}).sort("created_at", -1)
+    reports = list(bug_col.find({"reported_by": session["user_id"]}))
+
+    for r in reports:
+        r["_id"] = str(r["_id"])
 
     return render_template("viewdetails.html", reports=reports)
 
@@ -170,6 +173,10 @@ def bug_report_page():
         return redirect("/login")
 
     bugs = list(bug_col.find({"reported_by": session["user_id"]}))
+
+    # Convert ObjectId to string
+    for bug in bugs:
+        bug["_id"] = str(bug["_id"])
 
     return render_template("bug_report.html", bugs=bugs)
 
@@ -256,49 +263,37 @@ def delete_bug(bug_id):
 
 # ---------------- UPDATE BUG ----------------
 
-@app.route("/update_bug/<bug_id>", methods=["POST"])
-def update_bug(bug_id):
-
-    if "user_id" not in session:
-        return jsonify({"error": "Unauthorized"}), 401
+@app.route("/update_bug/<id>", methods=["POST"])
+def update_bug(id):
 
     data = request.get_json()
 
-    update_data = {}
-
-    fields = ["title","module","steps","expected","actual"]
-
-    for field in fields:
-        if data.get(field):
-            update_data[field] = data[field]
-
-    update_data["updated_at"] = datetime.utcnow()
-
     bug_col.update_one(
-        {"_id": ObjectId(bug_id)},
-        {"$set": update_data}
+        {"_id": ObjectId(id)},
+        {"$set":{
+            "title": data["title"],
+            "module": data["module"],
+            "steps": data["steps"],
+            "expected": data["expected"],
+            "actual": data["actual"]
+        }}
     )
 
     return jsonify({"message":"Bug updated successfully"})
 
 # ---------------- UPDATE STATUS ----------------
 
-@app.route("/update_status/<bug_id>", methods=["POST"])
-def update_status(bug_id):
-
-    if "user_id" not in session:
-        return jsonify({"error":"Unauthorized"}),401
+@app.route("/update_status/<id>", methods=["POST"])
+def update_status(id):
 
     data = request.get_json()
 
-    status = data.get("status")
-
     bug_col.update_one(
-        {"_id": ObjectId(bug_id)},
-        {"$set":{"status":status}}
+        {"_id": ObjectId(id)},
+        {"$set":{"status": data["status"]}}
     )
 
-    return jsonify({"message":"Status updated successfully"})
+    return jsonify({"message":"Status updated"})
 
 # ---------------- TEST ROUTE ----------------
 
