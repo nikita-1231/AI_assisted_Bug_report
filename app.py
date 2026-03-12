@@ -306,6 +306,7 @@ def update_status(bug_id):
 def test():
     return "Server is running"
 
+
 # ---------------- RUN ----------------
 
 if __name__ == "__main__":
