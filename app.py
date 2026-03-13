@@ -180,7 +180,7 @@ def bug_report_page():
     for bug in bugs:
         bug["_id"] = str(bug["_id"])
 
-    return render_template("bug_report.html", bugs=bugs)
+    return render_template("bug_report.html", reports=bugs)
 
 # ---------------- GENERATE BUG ----------------
 
