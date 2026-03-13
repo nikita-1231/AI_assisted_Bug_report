@@ -17,7 +17,8 @@ print("App is starting...")
 
 # ---------------- MONGODB ----------------
 
-MONGO_URI = os.getenv("MONGO_URI")
+
+MONGO_URI = "mongodb://localhost:27017/"
 
 if not MONGO_URI:
     raise Exception("MONGO_URI not set")
@@ -114,22 +115,23 @@ def login_page():
 
 # ---------------- LOGIN ----------------
 
-@app.route("/login", methods=["POST"])
+@app.route("/login", methods=["GET","POST"])
 def login():
 
-    email = request.form.get("email")
-    password = request.form.get("password")
+    if request.method == "POST":
 
-    user = signup_col.find_one({"email": email})
+        email = request.form["email"]
+        password = request.form["password"]
 
-    if user and check_password_hash(user["password"], password):
+        user = signup_col.find_one({"email": email})
 
-        session["user_id"] = str(user["_id"])
-        session["user_name"] = user["name"]
+        if user and user["password"] == password:
 
-        return redirect("/dashboard")
+            session["user_id"] = str(user["_id"])   # IMPORTANT
 
-    return "Invalid credentials"
+            return redirect("/bug_report")
+
+    return render_template("login.html")
 
 # ---------------- DASHBOARD ----------------
 
