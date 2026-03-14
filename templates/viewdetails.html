@@ -1,6 +1,9 @@
+
 <!DOCTYPE html>
 <html>
+
 <head>
+
 <title>My Bug Reports</title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/viewdetails.css') }}">
@@ -9,11 +12,11 @@
 
 function deleteBug(id){
 
-fetch("/delete_bug/" + id, {
-method: "POST"
+fetch("/delete_bug/" + id,{
+method:"POST"
 })
-.then(res => res.json())
-.then(data => {
+.then(res=>res.json())
+.then(data=>{
 
 showMessage(data.message)
 
@@ -25,22 +28,25 @@ location.reload()
 
 }
 
+
 function showMessage(msg){
 
-let messageBox = document.getElementById("msg")
-messageBox.innerText = msg
-messageBox.style.display = "block"
-messageBox.style.opacity = "1"
+let messageBox=document.getElementById("msg")
+
+messageBox.innerText=msg
+messageBox.style.display="block"
+messageBox.style.opacity="1"
 
 setTimeout(()=>{
-messageBox.style.transition = "opacity 1s"
-messageBox.style.opacity = "0"
+messageBox.style.transition="opacity 1s"
+messageBox.style.opacity="0"
 },2000)
-setTimeout(function(){
-messageBox.style.display = "none"
-},3000)
-}
 
+setTimeout(()=>{
+messageBox.style.display="none"
+},3000)
+
+}
 
 
 function openUpdate(id,title,module,steps,expected,actual){
@@ -56,29 +62,40 @@ document.getElementById("actual").value=actual
 
 }
 
+
 function closeModal(){
+
 document.getElementById("updateModal").style.display="none"
+
 }
+
 
 function submitUpdate(){
 
-const id = document.getElementById("bug_id").value
+const id=document.getElementById("bug_id").value
 
 const data={
+
 title:document.getElementById("title").value,
 module:document.getElementById("module").value,
 steps:document.getElementById("steps").value,
 expected:document.getElementById("expected").value,
 actual:document.getElementById("actual").value
+
 }
 
 fetch("/update_bug/"+id,{
+
 method:"POST",
+
 headers:{
 "Content-Type":"application/json"
 },
+
 body:JSON.stringify(data)
+
 })
+
 .then(res=>res.json())
 .then(data=>{
 
@@ -92,17 +109,23 @@ location.reload()
 
 }
 
+
 function updateStatus(id,status){
 
 fetch("/update_status/"+id,{
+
 method:"POST",
+
 headers:{
 "Content-Type":"application/json"
 },
+
 body:JSON.stringify({
 status:status
 })
+
 })
+
 .then(res=>res.json())
 .then(data=>{
 
@@ -111,9 +134,11 @@ showMessage(data.message)
 })
 
 }
+
 </script>
 
 </head>
+
 
 <body>
 
@@ -128,7 +153,9 @@ showMessage(data.message)
 <table>
 
 <thead>
+
 <tr>
+
 <th>Title</th>
 <th>Module</th>
 <th>Severity</th>
@@ -136,7 +163,9 @@ showMessage(data.message)
 <th>Status</th>
 <th>Date</th>
 <th>Actions</th>
+
 </tr>
+
 </thead>
 
 <tbody>
@@ -146,35 +175,50 @@ showMessage(data.message)
 <tr>
 
 <td>{{ r.title }}</td>
+
 <td>{{ r.module }}</td>
+
 <td>{{ r.severity }}</td>
+
 <td>{{ r.priority }}</td>
 
 <td>
-<select onchange="updateStatus('{{ r._id }}', this.value)">
+
+<select onchange="updateStatus('{{ r._id }}',this.value)">
+
 <option value="Open" {% if r.status == "Open" %}selected{% endif %}>Open</option>
+
 <option value="In Progress" {% if r.status == "In Progress" %}selected{% endif %}>In Progress</option>
+
 <option value="Fixed" {% if r.status == "Fixed" %}selected{% endif %}>Fixed</option>
+
 </select>
+
 </td>
+
 <td>{{ r.created_at }}</td>
 
 <td>
+
 <div class="action-buttons">
 
-<button 
-onclick="openUpdate('{{ r._id }}',`{{ r.title }}`,`{{ r.module }}`,`{{ r.steps }}`,`{{ r.expected }}`,`{{ r.actual }}`)"
+<button
+onclick="openUpdate('{{ r._id }}','{{ r.title }}','{{ r.module }}','{{ r.steps }}','{{ r.expected }}','{{ r.actual }}')"
 class="btn update">
+
 Update
+
 </button>
 
 <button onclick="deleteBug('{{ r._id }}')" class="btn delete">
+
 Delete
+
 </button>
 
 </div>
-</td>
 
+</td>
 
 </tr>
 
@@ -191,6 +235,8 @@ Delete
 {% endif %}
 
 </div>
+
+
 <div id="updateModal" style="display:none;background:#00000090;position:fixed;top:0;left:0;width:100%;height:100%;">
 
 <div style="background:white;padding:20px;width:400px;margin:100px auto;border-radius:10px;">
@@ -200,15 +246,23 @@ Delete
 <input type="hidden" id="bug_id">
 
 <input id="title" placeholder="Title"><br><br>
+
 <input id="module" placeholder="Module"><br><br>
+
 <textarea id="steps" placeholder="Steps"></textarea><br><br>
+
 <textarea id="expected" placeholder="Expected"></textarea><br><br>
+
 <textarea id="actual" placeholder="Actual"></textarea><br><br>
 
 <button onclick="submitUpdate()">Update</button>
+
 <button onclick="closeModal()">Cancel</button>
 
 </div>
+
 </div>
+
 </body>
+
 </html>

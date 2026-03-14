@@ -1,16 +1,19 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <link rel="icon" href="/static/favicon.ico">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="/static/css/alert.css">
-    <title>Signup Page</title>
-    
-    <script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="icon" href="/static/favicon.ico">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="/static/css/alert.css">
+
+<title>Signup Page</title>
+
+<script>
+
 function validateform() {
 
     const username = document.getElementById("username").value;
@@ -19,8 +22,9 @@ function validateform() {
     const password = document.getElementById("password").value;
     const error = document.getElementById("error");
 
-    /* ---------- USERNAME VALIDATION ---------- */
+    /* USERNAME VALIDATION */
     const regex = /^[A-Za-z0-9@#]{6,12}$/;
+
     if (!regex.test(username)) {
         error.innerHTML =
             "1. Username must not more than 12 characters long.<br>" +
@@ -29,25 +33,28 @@ function validateform() {
         return false;
     }
 
-    /* ---------- EMAIL VALIDATION ---------- */
+    /* EMAIL VALIDATION */
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!emailRegex.test(email)) {
         error.innerHTML = "Enter a valid email address";
         return false;
     }
 
-    /* ---------- MOBILE VALIDATION ---------- */
+    /* MOBILE VALIDATION */
     const mobileRegex = /^[6-9]\d{9}$/;
+
     if (!mobileRegex.test(mobile)) {
         error.innerHTML = "Enter a valid 10-digit mobile number";
         return false;
     }
 
-    /* ---------- PASSWORD VALIDATION ---------- */
+    /* PASSWORD VALIDATION */
     const passwordRegex =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
     if (!passwordRegex.test(password)) {
+
         error.innerHTML =
             "Password must have:<br>" +
             "- 1 uppercase<br>" +
@@ -55,117 +62,160 @@ function validateform() {
             "- 1 number<br>" +
             "- 1 special character<br>" +
             "- minimum 8 characters";
+
         return false;
     }
 
     error.innerHTML = "";
 
-    /* ---------- FETCH API ---------- */
-    fetch("/signup", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
+    /* FETCH API */
+
+    fetch("/signup",{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
         },
+
         body: JSON.stringify({
-             username,
-             email,
-             mobile,
-             password
+            username,
+            email,
+            mobile,
+            password
         })
+
     })
+
     .then(res => res.json())
+
     .then(data => {
-        if (data.message) {
-            // alert(data.message);
-            showAlert(data.message, "success");
-            setTimeout(() => {
-          window.location.href ="/login"
-         }, 5000);
 
-        document.querySelector("form").reset();
- 
-            
-        } else if (data.error) {
-            // alert(data.error);
-            showAlert(data.error, "error");
-        } else {
-            alert("Unexpected response");
+        if(data.message){
+
+            showAlert(data.message,"success");
+
+            setTimeout(()=>{
+
+                window.location.href="/login"
+
+            },5000)
+
+            document.querySelector("form").reset()
+
         }
+
+        else if(data.error){
+
+            showAlert(data.error,"error")
+
+        }
+
+        else{
+
+            alert("Unexpected response")
+
+        }
+
     })
-    .catch(err => {
-        alert("Server error!");
-        console.log(err);
-    });
 
-    return false; // prevent refresh
+    .catch(err=>{
 
+        alert("Server error!")
 
+        console.log(err)
 
+    })
 
+    return false
 
+}
 
-}   
 </script>
 
 </head>
 
 <body>
-    
+
 <form autocomplete="off" onsubmit="return validateform();">
 
-        <h1>Signup</h1>
+<h1>Signup</h1>
 
-        <input type="text" id="username"  autocomplete="off" placeholder="Username" required>
-        <input type="email" id="email"  autocomplete="off" placeholder="Email" required>
-        <input type="text" id="mobile"  autocomplete="off" placeholder="Number" maxlength="10" required >
+<input type="text" id="username" name="username" autocomplete="off" placeholder="Username" required>
 
-        
-         <div class="password-box">
-        <input type="password" id="password" autocomplete="new-password" placeholder="Password" required>
-        <img src="/static/eye.png"
-         id="eyeOpen"
-         class="eye-icon "
-         onclick="togglePassword()">
-         <img src="/static/hidden.png"
-         id="eyeClose"
-         class="eye-icon"
-         onclick="togglePassword()">
-    </div>
-        
-        <p id="error" style="color: rgb(233, 24, 24);"></p>
-        <button type="submit">Signup</button>
-        <p>Already signed up? Click here to <a href="/login">login</a>.</p>
+<input type="email" id="email" name="email" autocomplete="off" placeholder="Email" required>
+
+<input type="text" id="mobile" name="mobile" autocomplete="off" placeholder="Number" maxlength="10" required>
+
+<div class="password-box">
+
+<input type="password" id="password" name="password" autocomplete="new-password" placeholder="Password" required>
+
+<img src="/static/eye.png"
+id="eyeOpen"
+class="eye-icon"
+onclick="togglePassword()">
+
+<img src="/static/hidden.png"
+id="eyeClose"
+class="eye-icon"
+onclick="togglePassword()">
+
+</div>
+
+<p id="error" style="color: rgb(233, 24, 24);"></p>
+
+<button type="submit">Signup</button>
+
+<p>Already signed up? Click here to <a href="/login">login</a>.</p>
+
+</form>
 
 
+<script>
 
-    </form>
-    
-   
-    <script>
-      function togglePassword() {
-    const passwordInput = document.getElementById("password");
+function togglePassword(){
 
-    const eyeOpen = document.getElementById("eyeOpen");
-    const eyeClose = document.getElementById("eyeClose");
+const passwordInput=document.getElementById("password")
 
-    if (passwordInput.type === "password") {
-        passwordInput.type = "text";
-        eyeOpen.classList.remove("hidden");
-        eyeClose.classList.add("hidden");
-    } else {
-        passwordInput.type = "password";
-        
-        eyeOpen.classList.add("hidden");
-        eyeClose.classList.remove("hidden");
-    }
+const eyeOpen=document.getElementById("eyeOpen")
+
+const eyeClose=document.getElementById("eyeClose")
+
+if(passwordInput.type==="password"){
+
+passwordInput.type="text"
+
+eyeOpen.classList.remove("hidden")
+
+eyeClose.classList.add("hidden")
+
 }
+
+else{
+
+passwordInput.type="password"
+
+eyeOpen.classList.add("hidden")
+
+eyeClose.classList.remove("hidden")
+
+}
+
+}
+
 </script>
- <!-- alert box -->
-    <div id="customAlert" class="alert-box hidden">
-    <span id="alertMessage"></span>
+
+
+<div id="customAlert" class="alert-box hidden">
+
+<span id="alertMessage"></span>
+
 </div>
 
 <script src="/static/js/alert.js"></script>
+
 </body>
 
 </html>
+```

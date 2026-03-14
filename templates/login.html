@@ -16,21 +16,22 @@
     <h1>Login</h1>
 
      
-        <input type="email" id="email" autocomplete="off"  placeholder="Email" required>
-        <!-- <input type="number" id="mobile" placeholder="Number" required> -->
+        <input type="email" id="email" name="email" autocomplete="off" placeholder="Email" required>
+       
         
-        <!-- <input type="password" id="password" placeholder="Password" required> -->
         <div class="password-box">
-        <input type="password" id="password" autocomplete="new-password" placeholder="Password" required>
-        <img src="/static/eye.png"
-         id="eyeOpen"
-         class="eye-icon "
-         onclick="togglePassword()">
-         <img src="/static/hidden.png"
-         id="eyeClose"
-         class="eye-icon"
-         onclick="togglePassword()">
-    </div>
+    <input type="password" id="password" name="password" autocomplete="new-password" placeholder="Password" required>
+
+    <img src="/static/eye.png"
+        id="eyeOpen"
+        class="eye-icon"
+        onclick="togglePassword()">
+
+    <img src="/static/hidden.png"
+        id="eyeClose"
+        class="eye-icon"
+        onclick="togglePassword()">
+</div>
         <h4>Forget password?</h4>
         <p id="error" style="color: rgb(233, 24, 24);"></p>
         

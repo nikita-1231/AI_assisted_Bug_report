@@ -18,7 +18,7 @@ print("App is starting...")
 # ---------------- MONGODB ----------------
 
 
-MONGO_URI = "mongodb://localhost:27017/"
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
 
 if not MONGO_URI:
     raise Exception("MONGO_URI not set")
@@ -31,10 +31,10 @@ try:
 except Exception as e:
     print("Mongo connection error:", e)
 
-db = client.blogs
+db = client.test
 
-signup_col = db.signup
-bug_col = db.bug_report
+signup_col = db.users
+bug_col = db.bugs
 
 spell = SpellChecker()
 
@@ -90,22 +90,29 @@ def home():
 @app.route("/signup", methods=["POST"])
 def signup():
 
-    name = request.form.get("name")
-    email = request.form.get("email")
-    password = request.form.get("password")
+    data = request.get_json()
+
+    username = data.get("username")
+    email = data.get("email")
+    mobile = data.get("mobile")
+    password = data.get("password")
+
+    if not username or not email or not mobile or not password:
+        return jsonify({"error": "All fields are required"}), 400
 
     if signup_col.find_one({"email": email}):
-        return "User already exists"
+        return jsonify({"error": "User already exists"}), 400
 
     hashed_password = generate_password_hash(password)
 
     signup_col.insert_one({
-        "name": name,
+        "name": username,
         "email": email,
+        "mobile": mobile,
         "password": hashed_password
     })
 
-    return redirect("/login")
+    return jsonify({"message": "Signup successful"})
 
 # ---------------- LOGIN PAGE ----------------
 
@@ -120,19 +127,24 @@ def login():
 
     if request.method == "POST":
 
-        email = request.form["email"]
-        password = request.form["password"]
+        data = request.get_json()
+
+        email = data.get("email")
+        password = data.get("password")
 
         user = signup_col.find_one({"email": email})
 
-        if user and user["password"] == password:
+        if user and check_password_hash(user["password"], password):
 
-            session["user_id"] = str(user["_id"])   # IMPORTANT
+            session["user_id"] = str(user["_id"])
+            session["user_name"] = user["name"]
 
-            return redirect("/bug_report")
+            return jsonify({"message": "Login successful"})
+
+        else:
+            return jsonify({"error": "Invalid email or password"}), 401
 
     return render_template("login.html")
-
 # ---------------- DASHBOARD ----------------
 
 @app.route("/dashboard")
@@ -151,12 +163,12 @@ def viewdetails():
     if "user_id" not in session:
         return redirect("/login")
 
-    reports = list(bug_col.find({"reported_by": session["user_id"]}))
+    reports=list(bug_col.find({"reported_by":session["user_id"]}))
 
     for r in reports:
-        r["_id"] = str(r["_id"])
+        r["_id"]=str(r["_id"])
 
-    return render_template("viewdetails.html", reports=reports)
+    return render_template("viewdetails.html",reports=reports)
 
 # ---------------- LOGOUT ----------------
 
