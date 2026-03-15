@@ -18,7 +18,7 @@ print("App is starting...")
 # ---------------- MONGODB ----------------
 
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+MONGO_URI = os.getenv("MONGO_URI")
 
 if not MONGO_URI:
     raise Exception("MONGO_URI not set")
@@ -31,10 +31,10 @@ try:
 except Exception as e:
     print("Mongo connection error:", e)
 
-db = client.test
+db = client["test"]
 
-signup_col = db.users
-bug_col = db.bugs
+signup_col = db["users"]
+bug_col = db["bugs"]
 
 spell = SpellChecker()
 
@@ -316,7 +316,8 @@ def test():
     return "Server is running"
 
 
-# ---------------- RUN ----------------
+# ---------------- RUN ---------------
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
