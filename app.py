@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
 from bson import ObjectId
 from spellchecker import SpellChecker
+from flask import redirect
 
 # PDF
 from reportlab.lib.pagesizes import letter
