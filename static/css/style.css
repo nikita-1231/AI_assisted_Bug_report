@@ -18,21 +18,7 @@
         background-size: 100% 100%;
     }
 
-    form {
-        background-color: #ffffff;
-        padding: 30px 25px;
-        border-radius: 12px;
-        box-shadow: 0 15px 30px rgba(49, 48, 48, 0.25);
-        max-width: 420px;
-        width: 100%;
-        animation: fadeIn 0.30s ease-in-out;
-        margin-bottom: 12%;
-         animation: slideIn 0.5s ease;
-        
-   
-
-
-    }
+    
 
     h1 {
         text-align: center;
