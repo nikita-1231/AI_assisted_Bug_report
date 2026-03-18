@@ -79,7 +79,7 @@ MongoDB Database
 
 # Project Structure
 
-
+````
 AI_assisted_Bug_report/
 │
 ├── app.py
@@ -97,7 +97,7 @@ AI_assisted_Bug_report/
 │   └── css/
 │       ├── style.css
 │       └── viewdetails.css
-
+````
 
 ---
 
