@@ -12,7 +12,7 @@
 
 # Project Overview
 
-The AI Assisted Bug Report System** is a full-stack web application that allows users to report, manage, and track software bugs efficiently.
+The AI Assisted Bug Report System is a full-stack web application that allows users to report, manage, and track software bugs efficiently.
 
 The system includes a rule-based AI logic that automatically suggests:
 
