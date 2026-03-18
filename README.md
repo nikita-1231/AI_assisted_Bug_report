@@ -59,7 +59,7 @@ aiassistedbugreport-production.up.railway.app
 
 # Project Architecture
 
-
+````
 User
   │
   ▼
@@ -73,7 +73,7 @@ AI Rule Logic
   │
   ▼
 MongoDB Database
-
+````
 
 ---
 
@@ -296,8 +296,8 @@ This project demonstrates:
 
 # Author
 
-Nikita Kumari
-MCA Student
+Nikita Kumari |
+MCA Student |
 Aspiring Software Developer
 
 ---
